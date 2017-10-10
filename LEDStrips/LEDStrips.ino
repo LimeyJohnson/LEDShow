@@ -5,7 +5,7 @@ CRGB leds[NUM_LEDS];
 CRGB colors[7];
 int count = 0;
 int micPin = A0;
-
+const int buttonPin = 7;
 
 void setup() {
 	FastLED.addLeds<WS2811, DATA_PIN, BRG>(leds, NUM_LEDS);
@@ -18,7 +18,9 @@ void setup() {
 	colors[6] = CRGB::Purple;
 	colors[7] = CRGB::Fuchsia;
 	//  colors[8] = CRGB::Snow;
-
+	Serial.begin(9600);
+	
+	pinMode(buttonPin, INPUT);
 }
 void blinkRainbow()
 {
@@ -138,27 +140,55 @@ void randomSparkles()
 }
 int height = 20;
 int width = 10;
-
+CRGB bottom = CRGB::Blue;
+CRGB middle = CRGB::Black;
+CRGB top = CRGB::Black;
 void heights(int line, int size)
 {
-		int extra = line % 2 == 0 ? 0 : (height-size);
-		int base = (line*height) + extra;
-		int end = base + size;
+	int base, end;
+	if (line % 2 == 0) {
+		base = (line*height);
+		end = base + size;
 		for (; base < end; base++) {
-			leds[base] = CRGB::Red;
+			leds[base] = bottom;
 		}
+	}
+	else
+	{
+		//We are in an odd row
+		//We need to go down
+		base = (line * height) + height - 1;
+		end = base - size;
+		for (; base > end; base--) {
+			leds[base] = bottom;
+		}
+	}
+	leds[end] = middle;
 }
 
 void loop() {
+	
+	int analogValue = analogRead(micPin);
+	Serial.print("Mic Pin: ");
+	Serial.print(analogValue);
+	int height = map(analogValue, 0, 1024, 0, 20);
+	Serial.print("Maps To ");
+	Serial.println(height);
+	heights(0, height);
+	FastLED.show();
+	for (int x = 0; x < NUM_LEDS; x++)leds[x] = top;
+	delay(100);
+
+	/*
 	int wave[14] = { 18,17,15,10,5,3,2,2,3,5,10,15,17,18 };
 	for (int x = 0; x < width; x++) {
-		heights(x, wave[((count+x) % 14)]);
+		heights(x, wave[((count + x) % 14)]);
 	}
 	count++;
 	delay(50);
 	FastLED.show();
-	for (int x = 0; x < NUM_LEDS; x++)leds[x] = CRGB::Black;
-
+	for (int x = 0; x < NUM_LEDS; x++)leds[x] = top;
+	*/
 	//blinkSolid();
 	//blinkRainbow();
 	//fadedBlink();

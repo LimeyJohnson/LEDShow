@@ -1,8 +1,7 @@
-#include <FHT.h>
-int micPin = A4;
+int micPin = A0;
 int max = 0;
 int min = 1024;
-const int buttonPin = 7;
+
 int buttonState = 0;
 void setup() {
 	// put your setup code here, to run once:
